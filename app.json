@@ -21,13 +21,34 @@
       "supportsTablet": true
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+       "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.rajravi786.mytymob"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "643c3a03-cdaa-457a-ad44-9d9d0074dff6"
+      },
+      "plugins": [
+        [
+          "expo-notifications",
+          {
+            "icon": "./local/assets/icon.png",
+            "color": "#00000",
+            "sounds": [
+              "./assets/sound.wav",
+              "./local/assets/notification-sound-other.wav"
+            ]
+          }
+        ]
+      ]
+
     }
   }
 }
