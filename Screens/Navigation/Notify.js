@@ -1,9 +1,12 @@
 
 
 import { useState, useEffect, useRef } from 'react';
-import { Text, View, Button, Platform } from 'react-native';
+import { Text, View, Button, Platform ,TouchableOpacity } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import * as Sharing from 'expo-sharing';
+
+
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -22,6 +25,9 @@ async function sendPushNotification(expoPushToken) {
     body: 'And here is the body!',
     data: { someData: 'goes here' },
   };
+
+
+
 
   await fetch('https://exp.host/--/api/v2/push/send', {
     method: 'POST',
@@ -63,7 +69,21 @@ async function registerForPushNotificationsAsync() {
   }
 
   return token;
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export default function Notify() {
   const [expoPushToken, setExpoPushToken] = useState('');
@@ -88,6 +108,10 @@ export default function Notify() {
     };
   }, []);
 
+
+
+
+
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
       <Text>Your expo push token: {expoPushToken}</Text>
@@ -102,6 +126,25 @@ export default function Notify() {
           await sendPushNotification(expoPushToken);
         }}
       />
+
+
+
+
+
+
+
+<TouchableOpacity 
+// onPress={checkPackage}
+style={{backgroundColor:'blue' , width:'50%', height:35}}>
+  <Text>shere application</Text>
+</TouchableOpacity>
+
+
+
+
+
+
+
     </View>
   );
 }

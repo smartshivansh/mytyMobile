@@ -1,8 +1,88 @@
-import { View, Text ,StyleSheet , Image} from 'react-native'
-import React, { useState, useCallback, useEffect } from 'react'
+import { StyleSheet , Image} from 'react-native'
 import { GiftedChat ,   InputToolbar, Bubble , Send ,LeftAction, ChatInput, SendButton } from 'react-native-gifted-chat'
 import Heder from '../../Componets/Heder';
 import ws from '../../SocketConctions/Socketio';
+import { useState, useEffect, useRef } from 'react';
+import { Text, View, Button, Platform ,TouchableOpacity } from 'react-native';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import * as Sharing from 'expo-sharing';
+
+
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
+// Can use this function below OR use Expo's Push Notification Tool from: https://expo.dev/notifications
+async function sendPushNotification(expoPushToken) {
+  const message = {
+    to: expoPushToken,
+    sound: 'default',
+    title: 'Original Title',
+    body: 'And here is the body!',
+    data: { someData: 'goes here' },
+  };
+
+
+
+
+  await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Accept-encoding': 'gzip, deflate',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(message),
+  });
+}
+
+async function registerForPushNotificationsAsync() {
+  let token;
+  if (Device.isDevice) {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+    token = (await Notifications.getExpoPushTokenAsync()).data;
+    console.log(token);
+  } else {
+    alert('Must use physical device for Push Notifications');
+  }
+
+  if (Platform.OS === 'android') {
+    Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  return token;
+
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -11,43 +91,100 @@ import ws from '../../SocketConctions/Socketio';
 
 export default function Chats() {
 
+
     const [messages, setMessages] = useState([]);
+    const [expoPushToken, setExpoPushToken] = useState('');
+    const [notification, setNotification] = useState(false);
+    const notificationListener = useRef();
+    const responseListener = useRef();
+  
+    useEffect(() => {
+      registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+  
+      notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+        setNotification(notification);
+      });
+  
+      responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+        console.log(response);
+      });
+  
+      return () => {
+        Notifications.removeNotificationSubscription(notificationListener.current);
+        Notifications.removeNotificationSubscription(responseListener.current);
+      };
+    }, []);
+  
 
 
 
-    
 
+
+
+
+
+
+
+
+
+useEffect(() =>{
+  console.log(notification , 'fafaa')
+
+ let newMessage =  GiftedChat.append(messages, "message");
+ setMessages([...newMessage]);
+
+
+})
+
+
+
+
+
+
+
+   
    
     const onSend = (message) => {
       const currentMessage = message[0];
       console.log({ currentMessage });
+
+
+      
+
       let { text } = currentMessage;
+
+     
+
+
+
+
   
       let updatedMessages = GiftedChat.append(messages, message);
       setMessages([...updatedMessages]);
-       console.log("updated messages on send", updatedMessages);
+      //  console.log("updated messages on send", updatedMessages);
+       
   
-      ws.send(text);
+      ws.send(text); 
 
 
       
   
-      async function receiver(data) {
-         console.log("receiver", data);
+      // async function receiver(data) {
+        //  console.log("receiver", data);
 
 
 
-const inmessage = {
-  _id: Math.round(Math.random() * 1000000),
-  text : data,
-  createdAt: new Date(),
+// const inmessage = {
+//   _id: Math.round(Math.random() * 1000000),
+//   text : data,
+//   createdAt: new Date(),
   
-}
+// }
 
-setMessages(previousMessages => GiftedChat.append(previousMessages, inmessage))
+// setMessages(previousMessages => GiftedChat.append(previousMessages, inmessage))
        
-      }
-      ws.receive(receiver);
+//       }
+//       ws.receive(receiver);
     };
 
 
@@ -151,7 +288,7 @@ setMessages(previousMessages => GiftedChat.append(previousMessages, inmessage))
   return (
    <View style={{flex:1 , backgroundColor:'#ffffff' , marginTop:30}}>
     <View>
-<Heder/>
+<Heder />
     </View>
       {/* messages={messages}
        onSend={messages => onSend(messages)}
@@ -160,6 +297,18 @@ setMessages(previousMessages => GiftedChat.append(previousMessages, inmessage))
        }}
 
      */}
+
+
+
+
+
+<View>
+<Text>Title: {notification && notification.request.content.title} </Text>
+        <Text>Body: {notification && notification.request.content.body}</Text>
+        <Text>Data: {notification && JSON.stringify(notification.request.content.data)}</Text>
+</View>
+
+
 
 
 
@@ -180,7 +329,7 @@ setMessages(previousMessages => GiftedChat.append(previousMessages, inmessage))
           placeholder="Type your message here..."
 
           user={{
-            _id: 0
+            _id: 1
               }}
 
 
@@ -212,6 +361,10 @@ setMessages(previousMessages => GiftedChat.append(previousMessages, inmessage))
 
 
         />
+
+
+
+
 
 
 
