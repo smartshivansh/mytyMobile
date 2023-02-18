@@ -1,12 +1,16 @@
 import { StyleSheet , Image} from 'react-native'
 import { GiftedChat ,   InputToolbar, Bubble , Send ,LeftAction, ChatInput, SendButton } from 'react-native-gifted-chat'
 import Heder from '../../Componets/Heder';
-import ws from '../../SocketConctions/Socketio';
+// import ws from '../../SocketConctions/Socketio';
 import { useState, useEffect, useRef } from 'react';
 import { Text, View, Button, Platform ,TouchableOpacity } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import * as Sharing from 'expo-sharing';
+import { io } from "socket.io-client"
+import { KeyboardAvoidingView } from 'react-native';
+
+
 
 
 
@@ -97,6 +101,7 @@ export default function Chats() {
     const [notification, setNotification] = useState(false);
     const notificationListener = useRef();
     const responseListener = useRef();
+    const [response , setResponse] = useState("hggfd")
   
     useEffect(() => {
       registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
@@ -128,7 +133,52 @@ export default function Chats() {
 
 
 useEffect(() =>{
-  console.log(notification , 'fafaa')
+  console.log(notification ,  'fafaa')
+
+  const inmessage = {
+    _id: Math.round(Math.random() * 1000000),
+    text : "notification",
+    createdAt: new Date(),
+    
+  }
+
+  if(notification)
+{
+  setMessages(previousMessages => GiftedChat.append(previousMessages, inmessage))
+
+}
+
+
+}, [])
+
+console.log(messages)
+
+
+
+
+const socket = io("http://doornextshop.com");
+
+const IPv4 = "fferf";
+const value = ""
+
+// const formSubmitHandler = (e) => {
+//     e.preventDefault();
+
+//     socket.emit("msgTextReq", {IPv4: IPv4, msg:value, text: "Human:" + value + " " + "AI:"})
+// }
+
+
+socket.on("msgTextRes", function(data){
+
+    const response = data.response;
+    const inmessage = {
+      _id: Math.round(Math.random() * 1000000),
+      text :response ,
+      createdAt: new Date(),
+      
+    }
+    setResponse(response)
+    setMessages(previousMessages => GiftedChat.append(previousMessages, inmessage)) 
 
 
 
@@ -136,56 +186,19 @@ useEffect(() =>{
 
 
 
-
-
-
-
-   
    
     const onSend = (message) => {
       const currentMessage = message[0];
       console.log({ currentMessage });
+  let { text } = currentMessage;
 
-
-      
-
-      let { text } = currentMessage;
-
-     
-
-
-
-
-  
       let updatedMessages = GiftedChat.append(messages, message);
-      setMessages([...updatedMessages]);
+          setMessages([...updatedMessages]);
       //  console.log("updated messages on send", updatedMessages);
-       
+        socket.emit("msgTextReq", {IPv4: IPv4, msg:value, text: "Human:" + text + " " + "AI:"}) 
+
   
-      ws.send(text); 
-
-
-      
-  
-      // async function receiver(data) {
-        //  console.log("receiver", data);
-
-
-
-// const inmessage = {
-//   _id: Math.round(Math.random() * 1000000),
-//   text : data,
-//   createdAt: new Date(),
-  
-// }
-
-// setMessages(previousMessages => GiftedChat.append(previousMessages, inmessage))
-       
-//       }
-//       ws.receive(receiver);
     };
-
-
 
 
 
@@ -197,20 +210,7 @@ useEffect(() =>{
 
 
 
-
-
-
       
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -259,9 +259,9 @@ useEffect(() =>{
       const renderSend = (props) => {
         return (
           <Send {...props}>
-            <View style={{ backgroundColor:'#FFC700' , padding:12 , borderRadius:25 , bottom:-5 ,left:-10 }}>
+            <View style={{ backgroundColor:'#FFC700' , padding:11 , borderRadius:25 , bottom:-5 ,left:-10 }}>
               <Image 
-              style={{height:20, width:20 ,  }}
+              style={{height:18, width:18 ,   }}
                 source={require('../../assets/cAssets/Vector.png')}
               />
             </View>
@@ -269,9 +269,11 @@ useEffect(() =>{
         );
       };
 
-    
+    const [inputColor, setInputColor] = useState(false)
 
-    
+     const changeinput = () => {
+       setInputColor(true)
+     }
 
 
 
@@ -286,7 +288,7 @@ useEffect(() =>{
   return (
    <View style={{flex:1 , backgroundColor:'#ffffff' , marginTop:30}}>
     <View>
-<Heder />
+{/* <Heder /> */}
     </View>
       {/* messages={messages}
        onSend={messages => onSend(messages)}
@@ -297,14 +299,34 @@ useEffect(() =>{
      */}
 
 
+     <View style={{ flexDirection:'row', }}>
 
 
 
-<View>
+<Image
+        style={{height:12, width:12 , marginTop:15, marginLeft:10}}
+        source={require('../../assets/cAssets/myty.png')}
+      />
+
+
+
+
+
+
+<Text style={{fontSize:15, color:'#00000', marginLeft:5 , fontWeight:'700' , marginTop:9}}>myty</Text>
+</View>
+
+{/* <View>
 <Text>Title: {notification && notification.request.content.title} </Text>
         <Text>Body: {notification && notification.request.content.body}</Text>
         <Text>Data: {notification && JSON.stringify(notification.request.content.data)}</Text>
-</View>
+</View> */}
+
+
+
+
+
+
 
 
 
@@ -315,16 +337,24 @@ useEffect(() =>{
    renderBubble={renderBubble}
           infiniteScroll
           messages={messages}
-          textInputStyle={{ backgroundColor: "#C4C5CB", borderRadius: 20 , padding:10  }}
+          textInputProps={{
+            selectionColor: '#000000',}}
+
+        
+          textInputStyle={{ backgroundColor: "#fff", borderRadius: 20 , padding:10 
+
+        
+        }}
         //   renderBubble={(props) => (
         //     <CustomMessageBubble currentMessage={props.currentMessage} />
         //   )}
+          onInputTextChanged={changeinput}
           onSend={onSend}
           alwaysShowSend
           showUserAvatar={true}
           renderSend={renderSend}
-
-          placeholder="Type your message here..."
+          keyboardShouldPersistTaps='handled'
+          placeholder="lets start a conversation"
 
           user={{
             _id: 1
@@ -345,15 +375,11 @@ useEffect(() =>{
 
           renderAvatar={() => null}
           showAvatarForEveryMessage={true}
+
+          
         
         
-
-
-
-      
-
-
-
+    
 
 
 
@@ -362,7 +388,7 @@ useEffect(() =>{
 
 
 
-
+{Platform.OS === 'android' && <KeyboardAvoidingView behavior="never" />}
 
 
 
@@ -389,7 +415,10 @@ const styles = StyleSheet.create({
     marginLeft: 15,
     marginRight: 15,
     marginBottom: 10,
-    borderTopColor:'#ffffff'
+    borderTopColor:'#000000',
+
+    
+
 
    }
 })

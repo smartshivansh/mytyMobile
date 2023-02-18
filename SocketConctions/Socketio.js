@@ -3,8 +3,8 @@ import { io } from "socket.io-client";
 
 
 // const url = api;
-const url = `https://locallearn.in`;
-// const url = `http://doornextshop.com`;
+// const url = `https://locallearn.in`;
+ const url = `http://doornextshop.com`;
 
 class WSconnection {
   constructor() { }
