@@ -130,8 +130,6 @@ export default function Chats() {
 useEffect(() =>{
   console.log(notification , 'fafaa')
 
- let newMessage =  GiftedChat.append(messages, "message");
- setMessages([...newMessage]);
 
 
 })
@@ -272,6 +270,7 @@ useEffect(() =>{
       };
 
     
+
     
 
 
